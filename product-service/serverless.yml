@@ -1,0 +1,45 @@
+service: product-service
+frameworkVersion: "3"
+
+# TODO: redo to "env"
+
+plugins:
+  - serverless-webpack
+  - serverless-auto-swagger
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: dev
+  region: eu-central-1
+  httpApi:
+    cors: true
+
+custom:
+  webpack:
+    webpackConfig: webpack.config.js
+    packager: "yarn"
+  serverless-offline:
+    httpPort: 4000
+  autoswagger:
+    apiType: "httpApi"
+    generateSwaggerOnDeploy: false
+    schemes: ["http", "https", "ws", "wss"]
+    # excludeStages: ["production", "anyOtherStage"]
+
+functions:
+  getProductsList:
+    architecture: arm64
+    handler: src/handler.getProductsList
+    events:
+      - httpApi:
+          path: /products
+          method: GET
+  getProductsById:
+    architecture: arm64
+    handler: src/handler.getProductsById
+    events:
+      - httpApi:
+          path: /products/{productId}
+          method: GET

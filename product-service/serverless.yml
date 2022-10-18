@@ -19,7 +19,9 @@ provider:
 custom:
   webpack:
     webpackConfig: webpack.config.js
+    includeModules: false
     packager: "yarn"
+    excludeFiles: tests/*.test.js
   serverless-offline:
     httpPort: 4000
   autoswagger:
@@ -43,3 +45,10 @@ functions:
       - httpApi:
           path: /products/{productId}
           method: GET
+  createProduct:
+    architecture: arm64
+    handler: src/handler.createProduct
+    events:
+      - httpApi:
+          path: /products
+          method: POST

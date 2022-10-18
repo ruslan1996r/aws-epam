@@ -1,0 +1,16 @@
+{
+ "name": "database",
+ "version": "1.0.0",
+ "main": "index.js",
+ "license": "MIT",
+ "scripts": {
+  "migration:gen": "node scripts/createMigration",
+  "migration:run": "node scripts/runMigrations",
+  "envs": "node scripts/attachDatabaseEnvs"
+ },
+ "dependencies": {
+  "commander": "^9.4.1",
+  "dotenv": "^16.0.3",
+  "pg": "^8.8.0"
+ }
+}

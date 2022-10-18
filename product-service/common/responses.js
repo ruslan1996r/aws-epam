@@ -19,6 +19,9 @@ export const Responses = {
   _404(error = {}) {
     return this._DefineResponse(404, { error: error.message });
   },
+  _422(error = {}) {
+    return this._DefineResponse(422, { error: error.message });
+  },
   _500(error = {}) {
     return this._DefineResponse(500, { error: error.message });
   }

@@ -27,10 +27,10 @@ const csvParse = async ({ stream, key: fileKey }) => {
           Key: newFileKey
         }).promise();
 
-        // await s3.deleteObject({
-        //   Bucket: BUCKET,
-        //   Key: fileKey
-        // }).promise();
+        await s3.deleteObject({
+          Bucket: BUCKET,
+          Key: fileKey
+        }).promise();
 
         resolve()
       })

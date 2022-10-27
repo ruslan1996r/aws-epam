@@ -3,4 +3,5 @@
 export {
   getProductsList,
   getProductsById,
+  createProduct,
 } from './handlers';

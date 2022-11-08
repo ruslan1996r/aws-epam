@@ -2,6 +2,7 @@
 import Joi from "joi";
 import { createClient } from './sqlClient';
 import { ValidationError } from '../../common/errors/validationError';
+import { insert } from '../../common/pgHelpers';
 
 export const getProducts = async () => {
   const client = createClient();
@@ -84,6 +85,44 @@ export const createNewProduct = async (body) => {
   } catch (error) {
     await client.query('ROLLBACK');
     console.log('ERROR [createNewProduct]: ', error);
+  } finally {
+    await client.end();
+  }
+}
+
+export const createProducts = async (products) => {
+  const client = createClient();
+  await client.connect();
+
+  try {
+    client.query('BEGIN');
+
+    const formattedProducts = products
+      .map(({ title, description, price }) => ([title, description, price]));
+
+    const productsInsertQuery = insert({
+      table: 'products',
+      keys: ['title', 'description', 'price'],
+      values: formattedProducts,
+    })
+
+    const { rows } = await client.query(productsInsertQuery)
+    const newProductIds = rows.map(({ id }) => id);
+
+    const formattedCount = products.map(({ count }, index) => ([newProductIds[index], count]));
+    const stockInsertQuery = insert({
+      table: 'stocks',
+      keys: ['product_id', 'count'],
+      values: formattedCount,
+    })
+
+    await client.query(stockInsertQuery);
+    await client.query('COMMIT');
+
+    return newProductIds;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.log('ERROR [createProducts]: ', error);
   } finally {
     await client.end();
   }

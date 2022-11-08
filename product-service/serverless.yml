@@ -7,6 +7,7 @@ plugins:
   - serverless-webpack
   - serverless-auto-swagger
   - serverless-offline
+  - serverless-dotenv-plugin
 
 provider:
   name: aws
@@ -15,6 +16,14 @@ provider:
   region: eu-central-1
   httpApi:
     cors: true
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: "sqs:*"
+      Resource: ${self:custom.sqsArn}
+    - Effect: "Allow"
+      Action: "sns:*"
+      Resource:
+        Ref: SNSTopic
 
 custom:
   webpack:
@@ -29,6 +38,35 @@ custom:
     generateSwaggerOnDeploy: false
     schemes: ["http", "https", "ws", "wss"]
     # excludeStages: ["production", "anyOtherStage"]
+  sqsArn: arn:aws:sqs:eu-central-1:007759678575:catalogItemsQueue
+  email: dshmc27@gmail.com
+
+resources:
+  Resources:
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: createProductTopic
+    SNSSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: ${self:custom.email} # ${env:SNS_EMAIL}
+        Protocol: email
+        TopicArn:
+          Ref: SNSTopic
+        FilterPolicy:
+          limitedQuantity:
+            - "false"
+    SNSSubscription1:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: ${self:custom.email}
+        Protocol: email
+        TopicArn:
+          Ref: SNSTopic
+        FilterPolicy:
+          limitedQuantity:
+            - "true"
 
 functions:
   getProductsList:
@@ -52,3 +90,10 @@ functions:
       - httpApi:
           path: /products
           method: POST
+  catalogBatchProcess:
+    architecture: arm64
+    handler: src/handler.catalogBatchProcess
+    events:
+      - sqs:
+          batchSize: 5
+          arn: ${self:custom.sqsArn}

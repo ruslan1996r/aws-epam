@@ -9,6 +9,7 @@ const lambdas = [
   'product-service-dev-getProductsList',
   'product-service-dev-getProductsById',
   'product-service-dev-createProduct',
+  'product-service-dev-catalogBatchProcess',
 ]
 
 const buildVariables = () => {

@@ -3,6 +3,7 @@ frameworkVersion: "3"
 
 plugins:
   - serverless-webpack
+  - serverless-dotenv-plugin
 
 provider:
   name: aws
@@ -23,6 +24,9 @@ provider:
         - "s3:*"
       Resource:
         - "arn:aws:s3:::${self:custom.fileBucketName}/*"
+    - Effect: "Allow"
+      Action: "sqs:*"
+      Resource: ${self:custom.sqsArn}
 
 custom:
   webpack:
@@ -31,6 +35,7 @@ custom:
     packager: "yarn"
     excludeFiles: tests/*.test.js
   fileBucketName: epam-uploaded
+  sqsArn: arn:aws:sqs:eu-central-1:007759678575:catalogItemsQueue
 
 functions:
   importProductsFile:

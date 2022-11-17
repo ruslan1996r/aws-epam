@@ -7,4 +7,4 @@
 # Links
 - `products` - https://jct2dlgf89.execute-api.eu-central-1.amazonaws.com/products
 - `product(id)` - https://jct2dlgf89.execute-api.eu-central-1.amazonaws.com/products/1
-- `upload file` - https://bftd1eed4l.execute-api.eu-central-1.amazonaws.com/import/{fileName}
+- `upload file` - https://gvjwfafehd.execute-api.eu-central-1.amazonaws.com/import/{fileName}

@@ -12,6 +12,13 @@ provider:
   region: eu-central-1
   httpApi:
     cors: true
+    authorizers:
+      basicAuthorizer:
+        name: basicAuthorizer
+        functionArn: arn:aws:lambda:eu-central-1:007759678575:function:authorization-service-dev-basicAuthorizer
+        identitySource:
+          - $request.header.Authorization
+        type: request
   environment:
     FILE_UPLOAD_BUCKET_NAME: ${self:custom.fileBucketName}
   iamRoleStatements:
@@ -45,6 +52,8 @@ functions:
       - httpApi:
           path: /import/{fileName}
           method: GET
+          authorizer:
+            name: basicAuthorizer
   importFileParser:
     architecture: arm64
     handler: src/handler.importFileParser
@@ -55,3 +64,20 @@ functions:
           existing: true
           rules:
             - prefix: "uploaded/"
+
+resources:
+  Resources:
+    RestApi:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: myRestApi
+    GatewayResponseAccessDenied:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        RestApiId:
+          Ref: RestApi
+        ResponseType: MISSING_AUTHENTICATION_TOKEN
+        StatusCode: "404"
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"

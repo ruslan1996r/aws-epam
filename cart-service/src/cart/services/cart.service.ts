@@ -1,55 +1,53 @@
-import { Injectable } from '@nestjs/common';
-
+import { Inject, Injectable } from '@nestjs/common';
+import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
+import { IDatabase } from 'pg-promise';
 import { v4 } from 'uuid';
 
 import { Cart } from '../models';
 
 @Injectable()
 export class CartService {
-  private userCarts: Record<string, Cart> = {};
+  constructor(@Inject(NEST_PGPROMISE_CONNECTION) private readonly pg: IDatabase<any>) {}
 
-  findByUserId(userId: string): Cart {
-    return this.userCarts[ userId ];
-  }
+  async findByUserName(userId: string): Promise<Cart> {
+    const sqlQuery = `
+      select * from public.carts where user_name = $1;
+    `
+    const [userCart] = await this.pg.any(sqlQuery, [userId]);
 
-  createByUserId(userId: string) {
-    const id = v4(v4());
-    const userCart = {
-      id,
-      items: [],
+    const cartItemsQuery = `
+      SELECT * FROM public.cart_items item 
+      JOIN products p on p.id = item.product_id WHERE cart_id = $1;
+    `
+
+    const cart_items = await this.pg.any(cartItemsQuery, [userCart.id])
+
+    return {
+      id: userCart.id,
+      items: cart_items
     };
-
-    this.userCarts[ userId ] = userCart;
-
-    return userCart;
   }
 
-  findOrCreateByUserId(userId: string): Cart {
-    const userCart = this.findByUserId(userId);
+  async createByUserName(userName: string): Promise<Cart> {
+    const sqlQuery = `
+      INSERT INTO public.carts (user_name) VALUES ($1) returning *;
+    `
+
+    const userCart = await this.pg.one(sqlQuery, [userName]);
+
+    return {
+      id: userCart.id,
+      items: []
+    };
+  }
+
+  async findOrCreateByUserName(userName: string): Promise<Cart> {
+    const userCart = await this.findByUserName(userName);
 
     if (userCart) {
       return userCart;
     }
 
-    return this.createByUserId(userId);
+    return this.createByUserName(userName);
   }
-
-  updateByUserId(userId: string, { items }: Cart): Cart {
-    const { id, ...rest } = this.findOrCreateByUserId(userId);
-
-    const updatedCart = {
-      id,
-      ...rest,
-      items: [ ...items ],
-    }
-
-    this.userCarts[ userId ] = { ...updatedCart };
-
-    return { ...updatedCart };
-  }
-
-  removeByUserId(userId): void {
-    this.userCarts[ userId ] = null;
-  }
-
 }

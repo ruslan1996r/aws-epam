@@ -7,8 +7,11 @@ export type Product = {
 
 
 export type CartItem = {
-  product: Product,
   count: number,
+  id: string,
+  title: string,
+  description: string,
+  price: number,
 }
 
 export type Cart = {

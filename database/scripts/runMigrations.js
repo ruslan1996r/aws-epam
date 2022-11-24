@@ -71,11 +71,15 @@ const runMigrations = async (client) => {
 }
 
 (async () => {
-  const client = createClient();
+  try {
+    const client = createClient();
 
-  await client.connect();
+    await client.connect();
 
-  await runMigrations(client);
+    await runMigrations(client);
 
-  await client.end()
+    await client.end()
+  } catch (error) {
+    console.log(`MIGRATIONS_FAIL: `, error)
+  }
 })()
